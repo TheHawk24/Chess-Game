@@ -183,8 +183,8 @@ class Board {
         let type_piece = this.check_pos_piece.type;
         //let posX = this.check_pos_piece.x;
         //let posY = this.check_pos_piece.y;
-        let posX = 4;
-        let posY = 4;
+        let posX = 0;
+        let posY = 0;
 
         if (type_piece.includes("rook")) {
             //Check possible squares 
@@ -276,7 +276,7 @@ class Board {
             }
 
         } else if (type_piece.includes("bishop")) {
-            if (this.check_pos_piece.square.includes("c")) {
+            if (this.check_pos_piece.square == "c8" || this.check_pos_piece.square == "f1") {
                 for (let pos_square in this.obj) {
                     let pos_square_x = this.obj[pos_square].x;
                     let pos_square_y = this.obj[pos_square].y;
@@ -297,6 +297,11 @@ class Board {
                             ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
                         }
 
+                        if (posX - posY == count && pos_square_x - pos_square_y == count) {
+                            ctx.fillStyle = "red";
+                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                        }
+
                     }
 
                     //if (posY + posX == 8 && pos_square_x + pos_square_y == 8 && posX % 2 == 0) {
@@ -304,6 +309,27 @@ class Board {
                     //ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
                     //}
 
+                }
+            } else if (this.check_pos_piece.square == "f8" || this.check_pos_piece.square == "c1") {
+                for (let pos_square in this.obj) {
+                    let pos_square_x = this.obj[pos_square].x;
+                    let pos_square_y = this.obj[pos_square].y;
+                    for (let count = 1; count < 14; count++) {
+                        if (posX + posY == count && pos_square_x + pos_square_y == count) {
+                            ctx.fillStyle = "red";
+                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                        }
+
+                        if (posX - posY == count && pos_square_x - pos_square_y == count) {
+                            ctx.fillStyle = "red";
+                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                        }
+
+                        if (posY - posX == count && pos_square_y - pos_square_x == count) {
+                            ctx.fillStyle = "red";
+                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                        }
+                    }
                 }
             }
         }
