@@ -183,50 +183,75 @@ class Board {
         let type_piece = this.check_pos_piece.type;
         //let posX = this.check_pos_piece.x;
         //let posY = this.check_pos_piece.y;
-        let posX = 0;
-        let posY = 0;
+        this.obj.d1.piece = null;
+        //let posX = 4;
+        let posY = 4;
 
         if (type_piece.includes("rook")) {
             //Check possible squares 
-            for (let key in this.obj) {
-                let key_x = this.obj[key].x;
-                let key_y = this.obj[key].y
-                if (key_x === posX && !(key_x === posX && key_y === posY) && this.obj[key].piece == null) {
-                    let key_xy = key_x * key_y
-                    let danger = 0;
-                    for (let check_key in this.obj) {
-                        let check_key_xy = this.obj[check_key].x * this.obj[check_key].y
-                        let piece_pos = posX * posY
-                        if (this.obj[check_key].x == posX && this.obj[check_key].piece != null && key_xy < check_key_xy && check_key_xy < piece_pos) {
-                            danger = 1;
-                        }
-                        if (this.obj[check_key].x == posX && this.obj[check_key].piece != null && key_xy > check_key_xy && check_key_xy > piece_pos) {
-                            danger = 1;
-                        }
-                    }
-                    if (danger == 0) {
+
+            posY = posY + 1;
+            //posX = posX + 1
+            let state_up = 0;
+            let state_down = 0;
+            let state_left = 0;
+            let state_right = 0;
+            let c = this.check_pos_piece.square[0];
+            let c_code = this.check_pos_piece.square.charCodeAt(0);
+
+            for (let i = 1; i < 8; i++) {
+                if (posY - i > 0) {
+                    let count_up = posY - i;
+                    if (this.obj[`${c + count_up}`].piece == null && state_up == 0) {
                         ctx.fillStyle = "red";
-                        ctx.fillRect(key_x * width, key_y * height, width, height);
+                        ctx.fillRect(this.obj[`${c + count_up}`].x * width, this.obj[`${c + count_up}`].y * height, width, height);
+                        count_up++
+                    } else if (this.obj[`${c + count_up}`].piece != null) {
+                        state_up = 1;
                     }
-                } else if (key_y === posY && !(key_x === posX && key_y === posY) && this.obj[key].piece == null) {
-                    let key_xy = key_x * key_y
-                    let danger = 0;
-                    for (let check_key in this.obj) {
-                        let check_key_xy = this.obj[check_key].x * this.obj[check_key].y
-                        let piece_pos = posX * posY
-                        if (this.obj[check_key].y == posY && this.obj[check_key].piece != null && key_xy < check_key_xy && check_key_xy < piece_pos) {
-                            danger = 1;
-                        }
-                        if (this.obj[check_key].y == posY && this.obj[check_key].piece != null && key_xy > check_key_xy && check_key_xy > piece_pos) {
-                            danger = 1;
-                        }
-                    }
-                    if (danger == 0) {
+
+                }
+
+
+                let count_down = posY + i;
+                if (count_down < 8) {
+                    if (this.obj[`${c + count_down}`].piece == null && state_down == 0) {
                         ctx.fillStyle = "red";
-                        ctx.fillRect(key_x * width, key_y * height, width, height);
+                        ctx.fillRect(this.obj[`${c + count_down}`].x * width, this.obj[`${c + count_down}`].y * height, width, height);
+                        count_down++
+                    } else if (this.obj[`${c + count_down}`].piece != null) {
+                        state_down = 1;
                     }
                 }
+
+                let count_left = c_code - i;
+                if (count_left > 96) {
+                    let back_to_char = String.fromCharCode(count_left);
+                    if (this.obj[`${back_to_char + posY}`].piece == null && state_left == 0) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
+                        count_left++
+                    } else if (this.obj[`${back_to_char + posY}`].piece != null) {
+                        state_left = 1;
+                    }
+
+                }
+
+
+                let count_right = c_code + i;
+                if (count_right < 105) {
+                    let back_to_char = String.fromCharCode(count_right);
+                    if (this.obj[`${back_to_char + posY}`].piece == null && state_right == 0) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
+                        count_down++
+                    } else if (this.obj[`${back_to_char + posY}`].piece != null) {
+                        state_right = 1;
+                    }
+                }
+
             }
+
             //Knight possible positions
         } else if (type_piece.includes("knight")) {
             for (let pos_square in this.obj) {
