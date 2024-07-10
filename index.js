@@ -177,14 +177,61 @@ class Board {
         type: "",
     }
 
+    listen = () => {
+        canvas.addEventListener("click", (e) => {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            for (let key in this.obj) {
+                let posX = this.obj[key].x; //get square x coordinate
+                let posY = this.obj[key].y; // get square y coordinate
+                if ((posX * width + width) > mouseX && (posY * height + height) > mouseY && (posX * width) < mouseX && (posY * width) < mouseY && this.obj[key].piece != null) {
+                    this.check_pos_piece.x = posX
+                    this.check_pos_piece.y = posY
+                    this.check_pos_piece.square = key
+                    this.check_pos_piece.type = this.obj[key].piece
+                    ctx.fillStyle = "lightgreen";
+                    ctx.fillRect(this.obj[key].x * width, this.obj[key].y * height, width, height);
+                    const piece = new Image();
+                    piece.src = `./img/${this.obj[key].piece}.png`
+                    piece.onload = () => { ctx.drawImage(piece, this.obj[key].x * width, this.obj[key].y * height) };
+                    this.possible_movements()
+                }
+            }
+
+        })
+    }
 
 
-    possible_movements = () => {
+}
+
+
+class Pieces {
+
+
+    constructor() {
+        this.chess_board = new Board("green", "white");
+    }
+
+
+    load_chess_board = () => {
+        this.chess_board.drawBoard();
+        this.chess_board.load_pieces();
+    }
+
+    eventListener = () => {
+
+        this.chess_board.listen()
+        return this.chess_board.check_pos_piece
+
+    }
+
+    piecesValidSqaures = () => {
+        check_pos_piece = this.eventListener()
         let type_piece = this.check_pos_piece.type;
         //let posX = this.check_pos_piece.x;
         //let posY = this.check_pos_piece.y;
         this.obj.d1.piece = null;
-        //let posX = 4;
+        let posX = 4;
         let posY = 4;
 
         if (type_piece.includes("rook")) {
@@ -196,8 +243,8 @@ class Board {
             let state_down = 0;
             let state_left = 0;
             let state_right = 0;
-            let c = this.check_pos_piece.square[0];
-            let c_code = this.check_pos_piece.square.charCodeAt(0);
+            let c = "d5"[0];
+            let c_code = "d5".charCodeAt(0);
 
             for (let i = 1; i < 8; i++) {
                 if (posY - i > 0) {
@@ -207,6 +254,8 @@ class Board {
                         ctx.fillRect(this.obj[`${c + count_up}`].x * width, this.obj[`${c + count_up}`].y * height, width, height);
                         count_up++
                     } else if (this.obj[`${c + count_up}`].piece != null) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${c + count_up}`].x * width, this.obj[`${c + count_up}`].y * height, width, height);
                         state_up = 1;
                     }
 
@@ -220,6 +269,8 @@ class Board {
                         ctx.fillRect(this.obj[`${c + count_down}`].x * width, this.obj[`${c + count_down}`].y * height, width, height);
                         count_down++
                     } else if (this.obj[`${c + count_down}`].piece != null) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${c + count_down}`].x * width, this.obj[`${c + count_down}`].y * height, width, height);
                         state_down = 1;
                     }
                 }
@@ -232,6 +283,8 @@ class Board {
                         ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
                         count_left++
                     } else if (this.obj[`${back_to_char + posY}`].piece != null) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
                         state_left = 1;
                     }
 
@@ -246,6 +299,8 @@ class Board {
                         ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
                         count_down++
                     } else if (this.obj[`${back_to_char + posY}`].piece != null) {
+                        ctx.fillStyle = "red";
+                        ctx.fillRect(this.obj[`${back_to_char + posY}`].x * width, this.obj[`${back_to_char + posY}`].y * height, width, height);
                         state_right = 1;
                     }
                 }
@@ -360,38 +415,20 @@ class Board {
         }
     }
 
-    listen = () => {
-        canvas.addEventListener("click", (e) => {
-            let mouseX = e.offsetX;
-            let mouseY = e.offsetY;
-            for (let key in this.obj) {
-                let posX = this.obj[key].x; //get square x coordinate
-                let posY = this.obj[key].y; // get square y coordinate
-                if ((posX * width + width) > mouseX && (posY * height + height) > mouseY && (posX * width) < mouseX && (posY * width) < mouseY && this.obj[key].piece != null) {
-                    this.check_pos_piece.x = posX
-                    this.check_pos_piece.y = posY
-                    this.check_pos_piece.square = key
-                    this.check_pos_piece.type = this.obj[key].piece
-                    ctx.fillStyle = "lightgreen";
-                    ctx.fillRect(this.obj[key].x * width, this.obj[key].y * height, width, height);
-                    const piece = new Image();
-                    piece.src = `./img/${this.obj[key].piece}.png`
-                    piece.onload = () => { ctx.drawImage(piece, this.obj[key].x * width, this.obj[key].y * height) };
-                    this.possible_movements()
-                }
-            }
-
-        })
-    }
-
-
 }
 
 
 
-const chess_board = new Board("green", "white");
-chess_board.drawBoard();
-chess_board.load_pieces();
-chess_board.listen();
 
+
+
+
+//const chess_board = new Board("green", "white");
+//chess_board.drawBoard();
+//chess_board.load_pieces();
+//chess_board.listen();
+
+const pieces = new Pieces();
+pieces.load_chess_board();
+pieces.piecesValidSqaures();
 
