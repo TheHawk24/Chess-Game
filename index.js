@@ -221,92 +221,156 @@ class Pieces {
         this.chess_board.load_pieces();
     }
 
-    piecesValidSqaures = (check_positions) => {
-        let check_pos_piece = check_positions;
-        let type_piece = check_pos_piece.type;
-        console.log(check_pos_piece.type);
+    drawRect = (x, y, color) => {
+        ctx.fillStyle = color
+        ctx.fillRect(x * width, y * height, width, height)
+    }
 
-        //let posX = this.check_pos_piece.x;
-        //let posY = this.check_pos_piece.y;
-        this.chess_board.obj.d1.piece = null;
-        let posX = 4;
-        let posY = 4;
-
-        if (type_piece.includes("rook")) {
-            //Check possible squares 
-
-            posY = posY + 1;
-            //posX = posX + 1
-            let state_up = 0;
-            let state_down = 0;
-            let state_left = 0;
-            let state_right = 0;
-            let c = "d5"[0];
-            let c_code = "d5".charCodeAt(0);
-
-            for (let i = 1; i < 8; i++) {
-                if (posY - i > 0) {
-                    let count_up = posY - i;
-                    if (this.chess_board.obj[`${c + count_up}`].piece == null && state_up == 0) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${c + count_up}`].x * width, this.chess_board.obj[`${c + count_up}`].y * height, width, height);
-                        count_up++
-                    } else if (this.chess_board.obj[`${c + count_up}`].piece != null) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${c + count_up}`].x * width, this.chess_board.obj[`${c + count_up}`].y * height, width, height);
-                        state_up = 1;
-                    }
-
+    diagonalMovements = (bishop_position) => {
+        let state_up_left = 0;
+        let state_up_right = 0;
+        let state_down_right = 0;
+        let state_down_left = 0;
+        let c = bishop_position[0];
+        let num = bishop_position[1];
+        let c_code = c.charCodeAt(0);
+        for (let i = 1; i < 8; i++) {
+            let countDownNum = Number(num) - i;
+            let countUpNum = Number(num) + i;
+            let countDownChar = c_code - i;
+            let countUpChar = c_code + i;
+            if (countUpNum < 9 && countDownChar > 96) {
+                let char = String.fromCharCode(countDownChar);
+                let squarePosition = `${char + countUpNum}`;
+                let squarePositionX = this.chess_board.obj[squarePosition].x;
+                let squarePositionY = this.chess_board.obj[squarePosition].y;
+                let square = this.chess_board.obj[squarePosition].piece;
+                if (square == null && state_down_right == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                } else if (square != null && state_down_right == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    state_down_right = 1;
                 }
+            }
 
-
-                let count_down = posY + i;
-                if (count_down < 9) {
-                    if (this.chess_board.obj[`${c + count_down}`].piece == null && state_down == 0) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${c + count_down}`].x * width, this.chess_board.obj[`${c + count_down}`].y * height, width, height);
-                        count_down++
-                    } else if (this.chess_board.obj[`${c + count_down}`].piece != null) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${c + count_down}`].x * width, this.chess_board.obj[`${c + count_down}`].y * height, width, height);
-                        state_down = 1;
-                    }
+            if (countUpNum < 9 && countUpChar < 105) {
+                let char = String.fromCharCode(countUpChar);
+                let squarePosition = `${char + countUpNum}`;
+                let squarePositionX = this.chess_board.obj[squarePosition].x;
+                let squarePositionY = this.chess_board.obj[squarePosition].y;
+                let square = this.chess_board.obj[squarePosition].piece;
+                if (square == null && state_down_left == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                } else if (square != null && state_down_left == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    state_down_left = 1;
                 }
+            }
 
-                let count_left = c_code - i;
-                if (count_left > 96) {
-                    let back_to_char = String.fromCharCode(count_left);
-                    if (this.chess_board.obj[`${back_to_char + posY}`].piece == null && state_left == 0) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${back_to_char + posY}`].x * width, this.chess_board.obj[`${back_to_char + posY}`].y * height, width, height);
-                        count_left++
-                    } else if (this.chess_board.obj[`${back_to_char + posY}`].piece != null) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${back_to_char + posY}`].x * width, this.chess_board.obj[`${back_to_char + posY}`].y * height, width, height);
-                        state_left = 1;
-                    }
-
+            if (countDownNum > 0 && countUpChar < 105) {
+                let char = String.fromCharCode(countUpChar);
+                let squarePosition = `${char + countDownNum}`;
+                let squarePositionX = this.chess_board.obj[squarePosition].x;
+                let squarePositionY = this.chess_board.obj[squarePosition].y;
+                let square = this.chess_board.obj[squarePosition].piece;
+                if (square == null && state_up_left == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                } else if (square != null && state_up_left == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    state_up_left = 1;
                 }
+            }
 
+            if (countDownNum > 0 && countDownChar > 96) {
+                let char = String.fromCharCode(countDownChar);
+                let squarePosition = `${char + countDownNum}`;
+                let squarePositionX = this.chess_board.obj[squarePosition].x;
+                let squarePositionY = this.chess_board.obj[squarePosition].y;
+                let square = this.chess_board.obj[squarePosition].piece;
+                if (square == null && state_up_right == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                } else if (square != null && state_up_right == 0) {
+                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    state_up_right = 1;
+                }
+            }
+        }
+    }
 
-                let count_right = c_code + i;
-                if (count_right < 105) {
-                    let back_to_char = String.fromCharCode(count_right);
-                    if (this.chess_board.obj[`${back_to_char + posY}`].piece == null && state_right == 0) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${back_to_char + posY}`].x * width, this.chess_board.obj[`${back_to_char + posY}`].y * height, width, height);
-                        count_down++
-                    } else if (this.chess_board.obj[`${back_to_char + posY}`].piece != null) {
-                        ctx.fillStyle = "red";
-                        ctx.fillRect(this.chess_board.obj[`${back_to_char + posY}`].x * width, this.chess_board.obj[`${back_to_char + posY}`].y * height, width, height);
-                        state_right = 1;
-                    }
+    horizontalMovements = (check_pos_piece) => {
+        let state_up = 0;
+        let state_down = 0;
+        let state_left = 0;
+        let state_right = 0;
+        let c = check_pos_piece[0];
+        let posY = check_pos_piece[1];
+        let c_code = check_pos_piece.charCodeAt(0);
+
+        for (let i = 1; i < 8; i++) {
+            let count_down = posY - i;
+            let count_up = posY + i;
+            let countToRight = c_code - i;
+            let countToLeft = c_code + i;
+            // Check for empty squares starting from posY - i. Stop checking if square is not empty
+            if (count_down > 0) {
+                let square = this.chess_board.obj[`${c + count_down}`];
+                if (square.piece == null && state_up == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                } else if (square.piece != null && state_up == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                    state_up = 1;
                 }
 
             }
 
-            //Knight possible positions
+
+            // Check for empty squares starting from posY + i. Stop checking if square is not empty
+            if (count_up < 9) {
+                let square = this.chess_board.obj[`${c + count_up}`];
+                if (square.piece == null && state_down == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                } else if (square.piece != null && state_down == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                    state_down = 1;
+                }
+            }
+
+            if (countToRight > 96) {
+                let back_to_char = String.fromCharCode(countToRight);
+                let square = this.chess_board.obj[`${back_to_char + posY}`]
+                if (square.piece == null && state_left == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                } else if (square.piece != null && state_left == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                    state_left = 1;
+                }
+
+            }
+
+
+            if (countToLeft < 105) {
+                let back_to_char = String.fromCharCode(countToLeft);
+                let square = this.chess_board.obj[`${back_to_char + posY}`]
+                if (square.piece == null && state_right == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                } else if (square.piece != null && state_right == 0) {
+                    this.drawRect(square.x, square.y, "red");
+                    state_right = 1;
+                }
+            }
+
+        }
+
+    }
+
+    piecesValidSqaures = (check_positions) => {
+        let check_pos_piece = check_positions;
+        let type_piece = check_pos_piece.type;
+        if (type_piece.includes("rook")) {
+            this.horizontalMovements(check_pos_piece.square);
         } else if (type_piece.includes("knight")) {
+            let posX = check_pos_piece.x;
+            let posY = check_pos_piece.y;
             for (let pos_square in this.chess_board.obj) {
                 let pos_square_x = this.chess_board.obj[pos_square].x
                 let pos_square_y = this.chess_board.obj[pos_square].y
@@ -355,85 +419,7 @@ class Pieces {
 
         } else if (type_piece.includes("bishop")) {
             if (check_pos_piece.square == "c8" || check_pos_piece.square == "f1") {
-                posY = posY + 1;
-                //posX = posX + 1
-                let state_up_left = 0;
-                let state_up_right = 0;
-                let state_down_right = 0;
-                let state_down_left = 0;
-                //let state_right = 0;
-                let c = "g2"[0];
-                let num = "g2"[1];
-                let c_code = c.charCodeAt(0);
-                for (let i = 1; i < 8; i++) {
-                    let countDownNum = Number(num) - i;
-                    let countUpNum = Number(num) + i;
-                    let countDownChar = c_code - i;
-                    let countUpChar = c_code + i;
-                    if (countUpNum < 9 && countDownChar > 96) {
-                        let char = String.fromCharCode(countDownChar);
-                        let squarePosition = `${char + countUpNum}`;
-                        let squarePositionX = this.chess_board.obj[squarePosition].x;
-                        let squarePositionY = this.chess_board.obj[squarePosition].y;
-                        let square = this.chess_board.obj[squarePosition].piece;
-                        if (square == null && state_down_right == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                        } else if (square != null && state_down_right == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                            state_down_right = 1;
-                        }
-                    }
-
-                    if (countUpNum < 9 && countUpChar < 105) {
-                        let char = String.fromCharCode(countUpChar);
-                        let squarePosition = `${char + countUpNum}`;
-                        let squarePositionX = this.chess_board.obj[squarePosition].x;
-                        let squarePositionY = this.chess_board.obj[squarePosition].y;
-                        let square = this.chess_board.obj[squarePosition].piece;
-                        if (square == null && state_down_left == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                        } else if (square != null && state_down_left == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                            state_down_left = 1;
-                        }
-                    }
-
-                    if (countDownNum > 0 && countUpChar < 105) {
-                        let char = String.fromCharCode(countUpChar);
-                        let squarePosition = `${char + countDownNum}`;
-                        let squarePositionX = this.chess_board.obj[squarePosition].x;
-                        let squarePositionY = this.chess_board.obj[squarePosition].y;
-                        let square = this.chess_board.obj[squarePosition].piece;
-                        if (square == null && state_up_left == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                        } else if (square != null && state_up_left == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                            state_up_left = 1;
-                        }
-                    }
-
-                    if (countDownNum > 0 && countDownChar > 96) {
-                        let char = String.fromCharCode(countDownChar);
-                        let squarePosition = `${char + countDownNum}`;
-                        let squarePositionX = this.chess_board.obj[squarePosition].x;
-                        let squarePositionY = this.chess_board.obj[squarePosition].y;
-                        let square = this.chess_board.obj[squarePosition].piece;
-                        if (square == null && state_up_right == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                        } else if (square != null && state_up_right == 0) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(squarePositionX * width, squarePositionY * height, width, height);
-                            state_up_right = 1;
-                        }
-                    }
-                }
+                this.diagonalMovements(check_pos_piece.square);
                 //for (let pos_square in this.chess_board.obj) {
                 //    let pos_square_x = this.chess_board.obj[pos_square].x;
                 //    let pos_square_y = this.chess_board.obj[pos_square].y;
@@ -466,31 +452,36 @@ class Pieces {
                 //ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
                 //}
 
-            } else if (this.check_pos_piece.square == "f8" || this.check_pos_piece.square == "c1") {
-                for (let pos_square in this.chess_board.obj) {
-                    let pos_square_x = this.chess_board.obj[pos_square].x;
-                    let pos_square_y = this.chess_board.obj[pos_square].y;
-                    for (let count = 1; count < 14; count++) {
-                        if (posX + posY == count && pos_square_x + pos_square_y == count) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
-                        }
+            } else if (check_pos_piece.square == "f8" || check_pos_piece.square == "c1") {
+                this.diagonalMovements(check_pos_piece.square);
+                // for (let pos_square in this.chess_board.obj) {
+                //     let pos_square_x = this.chess_board.obj[pos_square].x;
+                //     let pos_square_y = this.chess_board.obj[pos_square].y;
+                //     for (let count = 1; count < 14; count++) {
+                //         if (posX + posY == count && pos_square_x + pos_square_y == count) {
+                //             ctx.fillStyle = "red";
+                //             ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                //         }
 
-                        if (posX - posY == count && pos_square_x - pos_square_y == count) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
-                        }
+                //         if (posX - posY == count && pos_square_x - pos_square_y == count) {
+                //             ctx.fillStyle = "red";
+                //             ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                //         }
 
-                        if (posY - posX == count && pos_square_y - pos_square_x == count) {
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
-                        }
-                    }
-                }
+                //         if (posY - posX == count && pos_square_y - pos_square_x == count) {
+                //             ctx.fillStyle = "red";
+                //             ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                //         }
+                //     }
+                // }
             }
+
+        } else if (type_piece.includes("queen")) {
+            this.diagonalMovements(check_pos_piece.square)
 
         }
     }
+
 
 
     boardListener = () => {
