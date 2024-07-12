@@ -226,7 +226,7 @@ class Pieces {
         ctx.fillRect(x * width, y * height, width, height)
     }
 
-    diagonalMovements = (bishop_position) => {
+    diagonalMovements = (bishop_position, isKing, piece_color) => {
         let state_up_left = 0;
         let state_up_right = 0;
         let state_down_right = 0;
@@ -248,7 +248,9 @@ class Pieces {
                 if (square == null && state_down_right == 0) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_down_right == 0) {
-                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    if (piece_color != square[0]) {
+                        this.drawRect(squarePositionX, squarePositionY, "red");
+                    }
                     state_down_right = 1;
                 }
             }
@@ -262,7 +264,9 @@ class Pieces {
                 if (square == null && state_down_left == 0) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_down_left == 0) {
-                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    if (piece_color != square[0]) {
+                        this.drawRect(squarePositionX, squarePositionY, "red");
+                    }
                     state_down_left = 1;
                 }
             }
@@ -276,7 +280,9 @@ class Pieces {
                 if (square == null && state_up_left == 0) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_up_left == 0) {
-                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    if (piece_color != square[0]) {
+                        this.drawRect(squarePositionX, squarePositionY, "red");
+                    }
                     state_up_left = 1;
                 }
             }
@@ -290,14 +296,18 @@ class Pieces {
                 if (square == null && state_up_right == 0) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_up_right == 0) {
-                    this.drawRect(squarePositionX, squarePositionY, "red");
+                    if (piece_color != square[0]) {
+                        this.drawRect(squarePositionX, squarePositionY, "red");
+                    }
                     state_up_right = 1;
                 }
             }
+
+            if (isKing) break;
         }
     }
 
-    horizontalMovements = (check_pos_piece) => {
+    horizontalMovements = (check_pos_piece, isKing, piece_color) => {
         let state_up = 0;
         let state_down = 0;
         let state_left = 0;
@@ -307,8 +317,8 @@ class Pieces {
         let c_code = check_pos_piece.charCodeAt(0);
 
         for (let i = 1; i < 8; i++) {
-            let count_down = posY - i;
-            let count_up = posY + i;
+            let count_down = Number(posY) - i;
+            let count_up = Number(posY) + i;
             let countToRight = c_code - i;
             let countToLeft = c_code + i;
             // Check for empty squares starting from posY - i. Stop checking if square is not empty
@@ -317,7 +327,9 @@ class Pieces {
                 if (square.piece == null && state_up == 0) {
                     this.drawRect(square.x, square.y, "red");
                 } else if (square.piece != null && state_up == 0) {
-                    this.drawRect(square.x, square.y, "red");
+                    if (piece_color != square.piece[0]) {
+                        this.drawRect(square.x, square.y, "red");
+                    }
                     state_up = 1;
                 }
 
@@ -330,7 +342,9 @@ class Pieces {
                 if (square.piece == null && state_down == 0) {
                     this.drawRect(square.x, square.y, "red");
                 } else if (square.piece != null && state_down == 0) {
-                    this.drawRect(square.x, square.y, "red");
+                    if (piece_color != square.piece[0]) {
+                        this.drawRect(square.x, square.y, "red");
+                    }
                     state_down = 1;
                 }
             }
@@ -341,7 +355,9 @@ class Pieces {
                 if (square.piece == null && state_left == 0) {
                     this.drawRect(square.x, square.y, "red");
                 } else if (square.piece != null && state_left == 0) {
-                    this.drawRect(square.x, square.y, "red");
+                    if (piece_color != square.piece[0]) {
+                        this.drawRect(square.x, square.y, "red");
+                    }
                     state_left = 1;
                 }
 
@@ -354,10 +370,14 @@ class Pieces {
                 if (square.piece == null && state_right == 0) {
                     this.drawRect(square.x, square.y, "red");
                 } else if (square.piece != null && state_right == 0) {
-                    this.drawRect(square.x, square.y, "red");
+                    if (piece_color != square.piece[0]) {
+                        this.drawRect(square.x, square.y, "red");
+                    }
                     state_right = 1;
                 }
             }
+
+            if (isKing) break;
 
         }
 
@@ -366,60 +386,59 @@ class Pieces {
     piecesValidSqaures = (check_positions) => {
         let check_pos_piece = check_positions;
         let type_piece = check_pos_piece.type;
+        let color = type_piece[0];
         if (type_piece.includes("rook")) {
-            this.horizontalMovements(check_pos_piece.square);
+            this.horizontalMovements(check_pos_piece.square, false, color);
         } else if (type_piece.includes("knight")) {
             let posX = check_pos_piece.x;
             let posY = check_pos_piece.y;
             for (let pos_square in this.chess_board.obj) {
                 let pos_square_x = this.chess_board.obj[pos_square].x
                 let pos_square_y = this.chess_board.obj[pos_square].y
+                let containsPiece = this.chess_board.obj[pos_square].piece;
+                if (containsPiece != null) {
+                    if (!containsPiece[0] != color) {
+                        continue;
+                    }
+                };
 
                 if (pos_square_x + 2 == posX && pos_square_y + 1 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x - 2 == posX && pos_square_y + 1 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x + 1 == posX && pos_square_y + 2 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x - 1 == posX && pos_square_y + 2 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x + 2 == posX && pos_square_y - 1 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x + 1 == posX && pos_square_y - 2 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x - 2 == posX && pos_square_y - 1 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
                 if (pos_square_x - 1 == posX && pos_square_y - 2 == posY) {
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(pos_square_x * width, pos_square_y * height, width, height);
+                    this.drawRect(pos_square_x, pos_square_y, "red")
                 }
 
             }
 
         } else if (type_piece.includes("bishop")) {
             if (check_pos_piece.square == "c8" || check_pos_piece.square == "f1") {
-                this.diagonalMovements(check_pos_piece.square);
+                this.diagonalMovements(check_pos_piece.square, false, color);
                 //for (let pos_square in this.chess_board.obj) {
                 //    let pos_square_x = this.chess_board.obj[pos_square].x;
                 //    let pos_square_y = this.chess_board.obj[pos_square].y;
@@ -453,7 +472,7 @@ class Pieces {
                 //}
 
             } else if (check_pos_piece.square == "f8" || check_pos_piece.square == "c1") {
-                this.diagonalMovements(check_pos_piece.square);
+                this.diagonalMovements(check_pos_piece.square, false, color);
                 // for (let pos_square in this.chess_board.obj) {
                 //     let pos_square_x = this.chess_board.obj[pos_square].x;
                 //     let pos_square_y = this.chess_board.obj[pos_square].y;
@@ -477,8 +496,11 @@ class Pieces {
             }
 
         } else if (type_piece.includes("queen")) {
-            this.diagonalMovements(check_pos_piece.square)
-
+            this.diagonalMovements(check_pos_piece.square, false, color);
+            this.horizontalMovements(check_pos_piece.square, false, color);
+        } else if (type_piece.includes("king")) {
+            this.horizontalMovements(check_pos_piece.square, true, color);
+            this.diagonalMovements(check_pos_piece.square, true, color)
         }
     }
 
