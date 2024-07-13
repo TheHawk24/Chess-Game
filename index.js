@@ -226,20 +226,24 @@ class Pieces {
         ctx.fillRect(x * width, y * height, width, height)
     }
 
-    diagonalMovements = (bishop_position, isKing, piece_color) => {
+    diagonalMovements = (bishop_position, isKing, isPawn, piece_color) => {
         let state_up_left = 0;
         let state_up_right = 0;
         let state_down_right = 0;
         let state_down_left = 0;
-        let c = bishop_position[0];
-        let num = bishop_position[1];
+        let c = "d5"[0];
+        let num = "d5"[1];
         let c_code = c.charCodeAt(0);
+
+
+
         for (let i = 1; i < 8; i++) {
             let countDownNum = Number(num) - i;
             let countUpNum = Number(num) + i;
             let countDownChar = c_code - i;
             let countUpChar = c_code + i;
-            if (countUpNum < 9 && countDownChar > 96) {
+
+            if (countUpNum < 9 && countDownChar > 96 && !isPawn) {
                 let char = String.fromCharCode(countDownChar);
                 let squarePosition = `${char + countUpNum}`;
                 let squarePositionX = this.chess_board.obj[squarePosition].x;
@@ -255,7 +259,7 @@ class Pieces {
                 }
             }
 
-            if (countUpNum < 9 && countUpChar < 105) {
+            if (countUpNum < 9 && countUpChar < 105 && !isPawn) {
                 let char = String.fromCharCode(countUpChar);
                 let squarePosition = `${char + countUpNum}`;
                 let squarePositionX = this.chess_board.obj[squarePosition].x;
@@ -277,7 +281,7 @@ class Pieces {
                 let squarePositionX = this.chess_board.obj[squarePosition].x;
                 let squarePositionY = this.chess_board.obj[squarePosition].y;
                 let square = this.chess_board.obj[squarePosition].piece;
-                if (square == null && state_up_left == 0) {
+                if (square == null && state_up_left == 0 && !isPawn) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_up_left == 0) {
                     if (piece_color != square[0]) {
@@ -293,7 +297,7 @@ class Pieces {
                 let squarePositionX = this.chess_board.obj[squarePosition].x;
                 let squarePositionY = this.chess_board.obj[squarePosition].y;
                 let square = this.chess_board.obj[squarePosition].piece;
-                if (square == null && state_up_right == 0) {
+                if (square == null && state_up_right == 0 && !isPawn) {
                     this.drawRect(squarePositionX, squarePositionY, "red");
                 } else if (square != null && state_up_right == 0) {
                     if (piece_color != square[0]) {
@@ -303,24 +307,32 @@ class Pieces {
                 }
             }
 
-            if (isKing) break;
+            if (isKing || isPawn) break;
         }
     }
 
-    horizontalMovements = (check_pos_piece, isKing, piece_color) => {
+    horizontalMovements = (check_pos_piece, isKing, isPawn, piece_color) => {
         let state_up = 0;
         let state_down = 0;
         let state_left = 0;
         let state_right = 0;
-        let c = check_pos_piece[0];
-        let posY = check_pos_piece[1];
-        let c_code = check_pos_piece.charCodeAt(0);
+        let c = "d5"[0];
+        let posY = "d5"[1];
+        let c_code = "d5".charCodeAt(0);
 
         for (let i = 1; i < 8; i++) {
             let count_down = Number(posY) - i;
             let count_up = Number(posY) + i;
             let countToRight = c_code - i;
             let countToLeft = c_code + i;
+
+            if (isPawn) {
+                count_up = 10;
+                countToRight = 0;
+                countToLeft = 105;
+            }
+
+
             // Check for empty squares starting from posY - i. Stop checking if square is not empty
             if (count_down > 0) {
                 let square = this.chess_board.obj[`${c + count_down}`];
@@ -377,7 +389,7 @@ class Pieces {
                 }
             }
 
-            if (isKing) break;
+            if (isKing || isPawn) break;
 
         }
 
@@ -388,7 +400,7 @@ class Pieces {
         let type_piece = check_pos_piece.type;
         let color = type_piece[0];
         if (type_piece.includes("rook")) {
-            this.horizontalMovements(check_pos_piece.square, false, color);
+            this.horizontalMovements(check_pos_piece.square, false, false, color);
         } else if (type_piece.includes("knight")) {
             let posX = check_pos_piece.x;
             let posY = check_pos_piece.y;
@@ -438,7 +450,7 @@ class Pieces {
 
         } else if (type_piece.includes("bishop")) {
             if (check_pos_piece.square == "c8" || check_pos_piece.square == "f1") {
-                this.diagonalMovements(check_pos_piece.square, false, color);
+                this.diagonalMovements(check_pos_piece.square, false, false, color);
                 //for (let pos_square in this.chess_board.obj) {
                 //    let pos_square_x = this.chess_board.obj[pos_square].x;
                 //    let pos_square_y = this.chess_board.obj[pos_square].y;
@@ -472,7 +484,7 @@ class Pieces {
                 //}
 
             } else if (check_pos_piece.square == "f8" || check_pos_piece.square == "c1") {
-                this.diagonalMovements(check_pos_piece.square, false, color);
+                this.diagonalMovements(check_pos_piece.square, false, false, color);
                 // for (let pos_square in this.chess_board.obj) {
                 //     let pos_square_x = this.chess_board.obj[pos_square].x;
                 //     let pos_square_y = this.chess_board.obj[pos_square].y;
@@ -496,11 +508,16 @@ class Pieces {
             }
 
         } else if (type_piece.includes("queen")) {
-            this.diagonalMovements(check_pos_piece.square, false, color);
-            this.horizontalMovements(check_pos_piece.square, false, color);
+            this.diagonalMovements(check_pos_piece.square, false, false, color);
+            this.horizontalMovements(check_pos_piece.square, false, false, color);
         } else if (type_piece.includes("king")) {
-            this.horizontalMovements(check_pos_piece.square, true, color);
-            this.diagonalMovements(check_pos_piece.square, true, color)
+            this.horizontalMovements(check_pos_piece.square, true, false, color);
+            this.diagonalMovements(check_pos_piece.square, true, false, color)
+        } else if (type_piece.includes("pawn")) {
+            this.horizontalMovements(check_pos_piece.square, false, true, color)
+            this.diagonalMovements(check_pos_piece.square, false, true, color)
+
+
         }
     }
 
