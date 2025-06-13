@@ -1,75 +1,110 @@
 from pwn import *
-from os import urandom
+from utils import MT19937
+import random
+import secrets
 import json
+import sys
 
-io = remote('13.233.255.238',4001)
-p = io.recvuntil(b'Enter token: ')
+host = "127.0.0.1"
+PORT = 9001
+state = []
 
-def is_valid_padding(message, io):
-    io.sendline(message)
-    resp = io.recvuntil(b'Enter token: ')
-    #send = bytes(json.dumps(message),'utf-8')
-    return '{"result": "Valid padding"}' in str(resp)
+p = remote(host, PORT)
+def set_state():
+    print(p.recvuntil(b'placements:'))
+    data = b'[[100,200,"V"],[300,400,"H"],[500,600,"V"],[700,800,"H"],[900,1000,"V"]]'
+    p.sendline(data)
+    p.recvline()
 
-def xor(*args, **kwargs):
-    strs = [s for s in args]
+    for i in range(312):
+        p.recvline()
+        p.sendline(f"{i+1},{i+2}")
+        p.recvline()
+        cords = p.recvline()
+        #print(cords)
+        cords = cords.split()[3].decode()
+        x,y= cords.split(",")
+        state.append(int(y))
+        state.append(int(x))
+        print(f"{i}: {x}, {y}")
+    #p.sendline(f"{i+1},{i+2}")
 
-    length = kwargs.pop('length', 'max')
-    if isinstance(length, int):
-        length = length
-    elif length == 'max':
-        length = max(len(s) for s in strs)
-    elif length == 'min':
-        length = min(len(s) for s in strs)
+
+def untemper(y: int, consts: dict) -> int:
+    size = consts['w']
+    y = invert_right_transform(y, consts['l'], size)
+    y = invert_left_transform(y, consts['t'], size, consts['c'])
+    y = invert_left_transform(y, consts['s'], size, consts['b'])
+    y = invert_right_transform(y, consts['u'], size, consts['d'])
+
+    return y & ((1 << size) - 1)
+
+def invert_right_transform(y1: int, shift: int, size: int, mask: int=0) -> int:
+    mask = mask or ((1 << size) - 1)
+
+    if shift >= size / 2:
+        return y1 ^ ((y1 >> shift) & mask)
     else:
-        raise ValueError("Invalid value for length parameter")
+        y0 = (y1 >> (size - shift)) << (size - shift)
+        for _ in range(shift, size, shift):
+            y0 = y1 ^ ((y0 >> shift) & mask)
+        return y0
 
-    def xor_indices(index):
-        b = 0
-        for s in strs:
-            b ^= s[index % len(s)]
-        return b
+def invert_left_transform(y1: int, shift: int, size: int, mask: int=0) -> int:
+    mask = mask or ((1 << size) - 1)
 
-    return bytes([xor_indices(i) for i in range(length)])
+    if shift >= size / 2:
+        return y1 ^ ((y1 << shift) & mask)
+    else:
+        y0 = y1
+        for _ in range(shift, size, shift):
+            y0 = y1 ^ ((y0 << shift) & mask)
+        return y0
 
-msg = p[343:-14].decode()
+def clone_MT19937():
+    consts = MT19937.CONSTANTS_32
+    cloned = MT19937.new(32)
+    cloned.set_state(state)
 
-json_data = json.loads(msg)
-message = json_data["ciphertext"]
-iv1 = json_data["IV1"]
-iv2 = json_data["IV2"]
-message = bytes.fromhex(message)
+    return cloned
 
-#io.sendline(msg)
-#resp = io.recvuntil(b"Enter token: ")
-#print(resp)
-#io.sendline(msg)
-#print(io.recvuntil(b'Enter token: '))
-#io.sendline(msg)
-#print(io.recvuntil(b'Enter token: '))
+def test_MT19937_cloning() -> bool:
+    cloned = clone_MT19937()
+    #cloned = MT19937.new(64, seed)
 
-ct_blocks = [message[i:i+16] for i in range(0, len(message), 16)]
+    print(p.recvline())
+    print(p.recvline())
+    p.sendline(b"try")
+    print(p.recvuntil(b'placements:'))
+    data = b'[[100,200,"V"],[300,400,"H"],[500,600,"V"],[700,800,"H"],[900,1000,"V"]]'
+    p.sendline(data)
+    p.recvline()
+    #c1 = cloned.genrand_int()
+    #print(c1)
+    for _ in range(10):
+        c1 = cloned.genrand_int()
+        c2 = cloned.genrand_int()
+        c3 = cloned.genrand_int()
+        c4 = cloned.genrand_int()
+        r = (((c3 >> 5) << 26) + (c4 >> 6)) / float(1 << 53)
+        print(f"C1 {c1}")
+        print(f"C2 {c2}")
+        print(f"MR {r}")
 
-pt = b''
-state1 = bytes.fromhex(iv1)
-state2 = bytes.fromhex(iv2)
-for block in ct_blocks:
-    iv_ok = urandom(16)
-    keystream = b''
-    for i in range(1, 17):
-        for now in range(256):
-            iv_nice = iv_ok[:16-i]
-            iv = iv_nice + bytes([now]) + xor(bytes([i]), keystream, length=len(keystream))
-            iv_hex = iv.hex()
-            payload = '{"IV1": "' + iv_hex + '",' + '"IV2": "' + state2.hex() + '",' + '"ciphertext": "' + block.hex() + '"}'
-            print(f"Payload: {payload}")
-            if is_valid_padding(payload.encode(), io):
-                print("Valid")
-                keystream = bytes([now ^ i]) + keystream
-                break
-    pt += xor(keystream, state1)
-    print(pt)
-    state1= xor(block, state2)
-    state2 = keystream
+    for _ in range(10):
+        c1 = cloned.genrand_int()
+        c2 = cloned.genrand_int()
+        print(f"C1 {c1}")
+        print(f"C2 {c2}")
+        print(f"MR {r}")
 
-print(str(pt))
+    return True
+
+
+def main():
+    set_state()
+    passed64 = test_MT19937_cloning()
+
+if __name__ == '__main__':
+    main()
+
